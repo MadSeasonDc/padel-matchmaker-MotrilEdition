@@ -1045,16 +1045,31 @@ with col_p2:
 partido["pareja_1"] = [p1d, p1r]
 partido["pareja_2"] = [p2d, p2r]
 
-        # -------- resultado --------
-        st.markdown("**Resultado**")
-        s1, s2, s3 = st.columns(3)
+     # -------- resultado --------
+st.markdown("**Resultado**")
+s1, s2, s3 = st.columns(3)
 
-        partido["set1_p1"] = s1.number_input("Set 1 P1", 0, 7, partido.get("set1_p1", 0))
-        partido["set1_p2"] = s1.number_input("Set 1 P2", 0, 7, partido.get("set1_p2", 0))
-        partido["set2_p1"] = s2.number_input("Set 2 P1", 0, 7, partido.get("set2_p1", 0))
-        partido["set2_p2"] = s2.number_input("Set 2 P2", 0, 7, partido.get("set2_p2", 0))
-        partido["set3_p1"] = s3.number_input("Set 3 P1", 0, 7, partido.get("set3_p1", 0))
-        partido["set3_p2"] = s3.number_input("Set 3 P2", 0, 7, partido.get("set3_p2", 0))
+partido["set1_p1"] = s1.number_input(
+    "Set 1 P1", 0, 7, partido.get("set1_p1", 0)
+)
+partido["set1_p2"] = s1.number_input(
+    "Set 1 P2", 0, 7, partido.get("set1_p2", 0)
+)
+
+partido["set2_p1"] = s2.number_input(
+    "Set 2 P1", 0, 7, partido.get("set2_p1", 0)
+)
+partido["set2_p2"] = s2.number_input(
+    "Set 2 P2", 0, 7, partido.get("set2_p2", 0)
+)
+
+partido["set3_p1"] = s3.number_input(
+    "Set 3 P1", 0, 7, partido.get("set3_p1", 0)
+)
+partido["set3_p2"] = s3.number_input(
+    "Set 3 P2", 0, 7, partido.get("set3_p2", 0)
+)
+
 
         if st.button("💾 Guardar partido"):
             save_data(data)
