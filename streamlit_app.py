@@ -1523,40 +1523,112 @@ elif menu == "Data Entry":
             "- Análisis táctico"
         )
 
-    # ---------------------------------------------------------
-    # ZONA DERECHA – REGISTRO DEL PUNTO
+  
+   # ---------------------------------------------------------
+    # ZONA DERECHA – REGISTRO DEL PUNTO (ÁRBOL GUIADO)
     # ---------------------------------------------------------
     with col_right:
         st.subheader("📝 Registro del punto")
 
-        st.caption(
-            "Aquí se seguirá el árbol lógico del punto "
-            "(equipo → jugador → tipo → detalle)."
+        st.caption("Entrada guiada siguiendo el árbol lógico del punto")
+
+        st.divider()
+
+        # =====================================================
+        # 1️⃣ ¿QUIÉN GANA EL PUNTO?
+        # =====================================================
+        equipo_gana = st.radio(
+            "¿Quién gana el punto?",
+            ["Equipo A", "Equipo B"],
+            horizontal=True
         )
 
-        st.warning(
-            "⚙️ Estructura preparada para:\n"
-            "- Equipo ganador del punto\n"
-            "- Jugador ejecutor\n"
-            "- Tipo de acción (saque / jugada / error)\n"
-            "- Detalle de la acción"
+        st.divider()
+
+        # =====================================================
+        # 2️⃣ JUGADOR DEL EQUIPO
+        # =====================================================
+        if equipo_gana == "Equipo A":
+            jugador = st.radio(
+                "Jugador que ejecuta",
+                ["Jugador 1", "Jugador 2"],
+                horizontal=True
+            )
+        else:
+            jugador = st.radio(
+                "Jugador que ejecuta",
+                ["Jugador 3", "Jugador 4"],
+                horizontal=True
+            )
+
+        st.divider()
+
+        # =====================================================
+        # 3️⃣ TIPO DE ACCIÓN
+        # =====================================================
+        tipo_accion = st.radio(
+            "Tipo de punto",
+            ["Saque", "Jugada", "Error del rival"],
+            horizontal=True
         )
 
-        st.markdown(
-            """
-            **Ejemplos de puntos a registrar (más adelante):**
-            - Equipo A → Jugador 1 → Jugada → Smash  
-            - Equipo B → Error rival → Red  
-            - Equipo A → Jugador 2 → Saque → Directo
-            """
+        st.divider()
+
+        # =====================================================
+        # 4️⃣ DETALLE SEGÚN ACCIÓN
+        # =====================================================
+        if tipo_accion == "Saque":
+            detalle = st.radio(
+                "Tipo de saque",
+                ["Directo", "Segundo saque"],
+                horizontal=True
+            )
+
+        elif tipo_accion == "Jugada":
+            detalle = st.radio(
+                "Tipo de jugada",
+                ["Normal", "Globo", "Smash"],
+                horizontal=True
+            )
+
+        elif tipo_accion == "Error del rival":
+            tipo_error = st.radio(
+                "Tipo de error",
+                ["Red", "Fuera"],
+                horizontal=True
+            )
+
+            jugador_falla = st.radio(
+                "Jugador que falla",
+                ["Jugador 1", "Jugador 2", "Jugador 3", "Jugador 4"],
+                horizontal=True
+            )
+
+            detalle = f"{tipo_error} – {jugador_falla}"
+
+        st.divider()
+
+        # =====================================================
+        # 5️⃣ RESUMEN DEL PUNTO (VISUAL)
+        # =====================================================
+        st.markdown("### ✅ Resumen del punto")
+
+        st.code(
+            f"""
+Zona del campo : {zona_campo}
+Equipo ganador : {equipo_gana}
+Jugador        : {jugador}
+Acción         : {tipo_accion}
+Detalle        : {detalle}
+""",
+            language="text"
         )
 
         st.info(
-            "Cada punto registrado aquí actualizará automáticamente "
-            "el marcador inferior (0–0 → 15–0 → 30–15 → etc.)."
+            "En el siguiente paso este bloque se convertirá en "
+            "**un evento que se guardará y actualizará el marcador**."
         )
 
-    st.divider()
 
     # =========================================================
     # ZONA INFERIOR – MARCADOR VIVO (SET / JUEGO / PUNTOS)
