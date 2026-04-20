@@ -74,7 +74,7 @@ def mostrar_result_book_easter_egg():
 
  
 
-ef siguiente_punto(valor_actual):
+def siguiente_punto(valor_actual):
     orden = ["0", "15", "30", "40", "AD"]
     if valor_actual not in orden:
         return valor_actual
