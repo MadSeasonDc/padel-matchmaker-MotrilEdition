@@ -1630,6 +1630,33 @@ Detalle        : {detalle}
         )
 
 
+ # =====================================================
+        # 6️⃣ REGISTRAR PUNTO
+        # =====================================================
+        import datetime
+
+        if st.button("➕ Registrar punto", use_container_width=True):
+
+            punto = {
+                "set": set_actual,
+                "game": juego_actual,
+                "zona": zona_campo,
+                "equipo": equipo_gana,
+                "jugador": jugador,
+                "accion": tipo_accion,
+                "detalle": detalle,
+                "timestamp": datetime.datetime.now().isoformat()
+            }
+
+            # Guardar punto en stats del jugador
+            if jugador not in data["players_stats"]:
+                data["players_stats"][jugador] = []
+
+            data["players_stats"][jugador].append(punto)
+            save_data(data)
+
+            st.success("✅ Punto registrado correctamente")
+
     # =========================================================
     # ZONA INFERIOR – MARCADOR VIVO (SET / JUEGO / PUNTOS)
     # =========================================================
