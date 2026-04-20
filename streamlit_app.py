@@ -1421,3 +1421,15 @@ elif menu == "PDF / PRINT":
     if st.button("📕 Generate Results Book"):
         mostrar_result_book_easter_egg()
 
+
+# ----------------------------
+# DATA ENTRY
+# ----------------------------
+elif menu == "Data Entry":
+    st.header("📊 Data Entry – Estadísticas por jugador")
+
+    st.info(
+        "Este módulo servirá para introducir estadísticas avanzadas "
+        "por jugador (puntos, zonas del campo, tipos de jugada, etc.). "
+        "De momento es solo la estructura base."
+    )
