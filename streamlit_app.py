@@ -908,6 +908,11 @@ menu = st.sidebar.radio(
     "Menú",
     ["Jornadas", "Ranking", "Locations", "Import / Export", "PDF / PRINT"] )
 
+
+def safe_index(options, value):
+    return options.index(value) if value in options else 0
+
+
 # ----------------------------
 # JORNADAS (MOTRIL EDITION)
 # ----------------------------
