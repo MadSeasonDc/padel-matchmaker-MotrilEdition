@@ -1490,29 +1490,26 @@ elif menu == "PDF / PRINT":
 # ----------------------------
 # DATA ENTRY
 # ----------------------------
+
 elif menu == "Data Entry":
+    import datetime
 
+    st.header("📊 Data Entry – Puntos del partido")
 
+    if "set_actual" not in st.session_state:
+        st.session_state.set_actual = "Set 1"
 
+    if "juego_actual" not in st.session_state:
+        st.session_state.juego_actual = 1
 
-import datetime
+    if "puntos_a" not in st.session_state:
+        st.session_state.puntos_a = "0"
 
-st.header("📊 Data Entry – Puntos del partido")
+    if "puntos_b" not in st.session_state:
+        st.session_state.puntos_b = "0"
 
-# -------- Session State --------
-if "set_actual" not in st.session_state:
-    st.session_state.set_actual = "Set 1"
+    st.divider()
 
-if "juego_actual" not in st.session_state:
-    st.session_state.juego_actual = 1
-
-if "puntos_a" not in st.session_state:
-    st.session_state.puntos_a = "0"
-
-if "puntos_b" not in st.session_state:
-    st.session_state.puntos_b = "0"
-
-st.divider()
 
 
     # =========================================================
