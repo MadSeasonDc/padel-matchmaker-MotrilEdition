@@ -1492,6 +1492,14 @@ elif menu == "PDF / PRINT":
 # ----------------------------
 elif menu == "Data Entry":
 
+    
+if "puntos_a" not in st.session_state:
+    st.session_state.puntos_a = "0"
+
+if "puntos_b" not in st.session_state:
+    st.session_state.puntos_b = "0"
+
+
     import datetime
 
     st.header("📊 Data Entry – Estadísticas por jugador")
