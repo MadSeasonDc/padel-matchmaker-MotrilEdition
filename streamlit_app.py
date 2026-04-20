@@ -1495,16 +1495,25 @@ elif menu == "Data Entry":
 
 
 
-    import datetime
+import datetime
 
-    st.header("📊 Data Entry – Estadísticas por jugador")
+st.header("📊 Data Entry – Puntos del partido")
 
-    st.markdown(
-        "Entrada de datos **punto a punto** para análisis avanzado de pádel. "
-        "Cada punto se registra siguiendo un árbol lógico estructurado."
-    )
+# -------- Session State --------
+if "set_actual" not in st.session_state:
+    st.session_state.set_actual = "Set 1"
 
-    st.divider()
+if "juego_actual" not in st.session_state:
+    st.session_state.juego_actual = 1
+
+if "puntos_a" not in st.session_state:
+    st.session_state.puntos_a = "0"
+
+if "puntos_b" not in st.session_state:
+    st.session_state.puntos_b = "0"
+
+st.divider()
+
 
     # =========================================================
     # INICIALIZAR SESSION STATE BÁSICO
