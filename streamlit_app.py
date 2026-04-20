@@ -1090,8 +1090,9 @@ if menu == "Jornadas":
             st.success("✅ Partido guardado correctamente")
 
 
+
 # ----------------------------
-# RANKING
+# RANKING (MOTRIL EDITION)
 # ----------------------------
 elif menu == "Ranking":
     import pandas as pd
@@ -1100,11 +1101,9 @@ elif menu == "Ranking":
 
     jornadas = data.get("jornadas", [])
 
-    # ----------------------------
-    # INICIALIZAR ESTADÍSTICAS
-    # ----------------------------
+    # Inicializar estadísticas SOLO para los 5 jugadores
     stats = {
-        j["nombre"]: {
+        nombre: {
             "PJ": 0,
             "PG": 0,
             "PP": 0,
@@ -1112,34 +1111,36 @@ elif menu == "Ranking":
             "JG": 0,
             "JP": 0
         }
-        for j in data["jugadores"]
+        for nombre in JUGADORES_INICIALES
     }
 
-    # ----------------------------
-    # CALCULAR ESTADÍSTICAS
-    # ----------------------------
+    # Procesar partidos
     for jornada in jornadas:
         for p in jornada.get("partidos", []):
-
             p1 = p.get("pareja_1", [])
             p2 = p.get("pareja_2", [])
 
+            # Ignorar partidos incompletos
+            if not p1 or not p2:
+                continue
             if len(p1) != 2 or len(p2) != 2:
                 continue
+            if "" in p1 or "" in p2:
+                continue
 
-            s1_p1, s1_p2 = p["set1_p1"], p["set1_p2"]
-            s2_p1, s2_p2 = p["set2_p1"], p["set2_p2"]
-            s3_p1, s3_p2 = p["set3_p1"], p["set3_p2"]
+            # Sets
+            s1_p1, s1_p2 = p.get("set1_p1", 0), p.get("set1_p2", 0)
+            s2_p1, s2_p2 = p.get("set2_p1", 0), p.get("set2_p2", 0)
+            s3_p1, s3_p2 = p.get("set3_p1", 0), p.get("set3_p2", 0)
 
+            # Partido no jugado
             if (s1_p1 + s1_p2) == 0:
                 continue
 
             juegos_p1 = s1_p1 + s2_p1 + s3_p1
             juegos_p2 = s1_p2 + s2_p2 + s3_p2
 
-            sets_p1 = (s1_p1 > s1_p2) + (s2_p1 > s2_p2)
-            sets_p2 = (s1_p2 > s1_p1) + (s2_p2 > s2_p1)
-
+            # Partidos jugados
             for j in p1:
                 stats[j]["PJ"] += 1
                 stats[j]["JG"] += juegos_p1
@@ -1150,19 +1151,24 @@ elif menu == "Ranking":
                 stats[j]["JG"] += juegos_p2
                 stats[j]["JP"] += juegos_p1
 
+            # Sets ganados
+            sets_p1 = (s1_p1 > s1_p2) + (s2_p1 > s2_p2)
+            sets_p2 = (s1_p2 > s1_p1) + (s2_p2 > s2_p1)
+
+            # Con tercer set
             if (s3_p1 + s3_p2) > 0:
-                if s3_p1 > s3_p2:
-                    ganadores, perdedores = p1, p2
-                else:
-                    ganadores, perdedores = p2, p1
+                ganadores = p1 if s3_p1 > s3_p2 else p2
+                perdedores = p2 if ganadores == p1 else p1
 
                 for j in ganadores:
                     stats[j]["PG"] += 1
                     stats[j]["Pts"] += 3
+
                 for j in perdedores:
                     stats[j]["PP"] += 1
                     stats[j]["Pts"] += 1
             else:
+                # Sin tercer set
                 if sets_p1 > sets_p2:
                     for j in p1:
                         stats[j]["PG"] += 1
@@ -1176,12 +1182,11 @@ elif menu == "Ranking":
                     for j in p1:
                         stats[j]["PP"] += 1
                 else:
+                    # Empate
                     for j in p1 + p2:
                         stats[j]["Pts"] += 1
 
-    # ----------------------------
-    # DATAFRAME
-    # ----------------------------
+    # Construir tabla
     filas = []
     for nombre, s in stats.items():
         filas.append({
@@ -1190,37 +1195,20 @@ elif menu == "Ranking":
             "PG": s["PG"],
             "PP": s["PP"],
             "Pts": s["Pts"],
-            "JG": s["JG"],
-            "JP": s["JP"],
             "Dif": s["JG"] - s["JP"]
         })
 
-    filas.sort(key=lambda x: (x["Pts"], x["PG"], x["Dif"]), reverse=True)
+    filas.sort(
+        key=lambda x: (x["Pts"], x["PG"], x["Dif"]),
+        reverse=True
+    )
+
     df = pd.DataFrame(filas)
     df.insert(0, "RK", range(1, len(df) + 1))
 
-    # ----------------------------
-    # ICONOS
-    # ----------------------------
-    def nombre_con_icono(row):
-        nombre = row["Jugador"]
-        if nombre in JUGADORES_LESIONADOS:
-            nombre = f"{nombre} ➕"
-        if row["RK"] == 1:
-            return f"🥇 {nombre}"
-        elif row["RK"] == 2:
-            return f"🥈 {nombre}"
-        elif row["RK"] == 3:
-            return f"🥉 {nombre}"
-        return nombre
-
-    df["Jugador"] = df.apply(nombre_con_icono, axis=1)
-
-    # ----------------------------
-    # ESTILO
-    # ----------------------------
+    # ---------- ESTILO ----------
     def style_row(row):
-        estilos = ["" for _ in row.index]
+        estilos = [""] * len(row)
 
         idx_jugador = row.index.get_loc("Jugador")
         if row["RK"] == 1:
@@ -1242,18 +1230,16 @@ elif menu == "Ranking":
         df.style
         .apply(style_row, axis=1)
         .set_properties(
-            subset=["PJ", "PG", "PP", "Pts", "JG", "JP", "Dif"],
-            **{"width": "55px", "text-align": "center"}
+            subset=["RK", "PJ", "PG", "PP", "Pts", "Dif"],
+            **{"text-align": "center", "width": "70px"}
         )
         .set_properties(
             subset=["Jugador"],
-            **{"width": "240px"}
+            **{"width": "220px"}
         )
     )
 
-    # ----------------------------
-    # TABLA CENTRADA
-    # ----------------------------
+    # ---------- TABLA ----------
     st.markdown("<div style='display:flex; justify-content:center;'>", unsafe_allow_html=True)
     st.dataframe(
         df_styled,
@@ -1262,49 +1248,41 @@ elif menu == "Ranking":
     )
     st.markdown("</div>", unsafe_allow_html=True)
 
-    # ----------------------------
-    # LEYENDA (CUADRO AJUSTADO AL TEXTO)
-    # ----------------------------
+    # ---------- LEYENDA ----------
     st.markdown(
         """
 <div style="
-    display: inline-block;
-    border: 1px solid rgba(200,200,200,0.4);
-    border-radius: 8px;
-    padding: 14px 18px;
-    margin-top: 14px;
-    margin-bottom: 16px;
+ display: inline-block;
+ border: 1px solid rgba(200,200,200,0.4);
+ border-radius: 8px;
+ padding: 14px 18px;
+ margin-top: 16px;
+ margin-bottom: 16px;
 ">
 <h4 style="margin-top:0;">📘 Leyenda del ranking</h4>
 <ul style="margin-left:0; padding-left:18px;">
-  <li><strong>RK</strong> → Posición</li>
-  <li><strong>PJ</strong> → Partidos jugados</li>
-  <li><strong>PG</strong> → Partidos ganados</li>
-  <li><strong>PP</strong> → Partidos perdidos</li>
-  <li><strong>Pts</strong> → Puntos totales</li>
-  <li><strong>JG</strong> → Juegos ganados</li>
-  <li><strong>JP</strong> → Juegos perdidos</li>
-  <li><strong>Dif</strong> → Diferencia de juegos (<strong>JG − JP</strong>)</li>
-  <li>➕ → <strong>No participan más.</strong></li>
+ <li><strong>RK</strong> → Posición</li>
+ <li><strong>PJ</strong> → Partidos jugados</li>
+ <li><strong>PG</strong> → Partidos ganados</li>
+ <li><strong>PP</strong> → Partidos perdidos</li>
+ <li><strong>Pts</strong> → Puntos totales</li>
+ <li><strong>Dif</strong> → Diferencia de juegos (JG − JP)</li>
 </ul>
 </div>
 """,
         unsafe_allow_html=True
     )
 
-    # ----------------------------
-    # SISTEMA DE PUNTUACIÓN (SUELTO)
-    # ----------------------------
+    # ---------- SISTEMA DE PUNTUACIÓN ----------
     st.markdown(
         """
 ### 🏓 Sistema de puntuación
-
-- ✅ **Partido ganado en 1 set** → **3 puntos**  
-- ✅ **Partido ganado en 2 sets (2‑0)** → **3 puntos**  
-- ✅ **Partido a 3 sets (1‑1 + set decisivo)** → **3 puntos ganador / 1 punto perdedor**  
-- ✅ **Empate sin tercer set (1‑1)** → **1 punto por jugador**
+- ✅ **Victoria directa (2 sets)** → **3 puntos**
+- ✅ **Partido con tercer set** → **3 puntos ganador / 1 punto perdedor**
+- ✅ **Empate sin set decisivo** → **1 punto por jugador**
 """
     )
+
 # ----------------------------
 # LOCATIONS
 # ----------------------------
