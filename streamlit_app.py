@@ -10,32 +10,12 @@ import io
 DATA_FILE = "padel_data.json"
 
 JUGADORES_INICIALES = [
-    "Antonio Seoane",
-    "Carlos Ortiz",
-    "Nacho Moros",
-    "Nacho Urbano",
-    "Adrian Gomez",
-    "Alvaro Sarmiento",
-    "Manuel Díaz", 
-    "Patricia Seoane",
-    "Julio Mendez",
-    "Jose Luis Pozuelo",
-    "Juan Carmona",
-    "Jesus Fernandez",
-    "Jordi Safont",
-    "Bea Jaen",
-    "Cecile Autran",
-    "Ester Martin",
-    "Graciela Martinez",
-    "Alicia Soriano",
-    "Lela Bekauri",
-    "Oriol Palacios"
+    "Rafa",
+    "Varo",
+    "Manolo",
+    "Carlitos",
+    "Baró"
 ]
-
-JUGADORES_LESIONADOS = {
-    "Ester Martin",
-    "Jose Luis Pozuelo"
-}
 
 
 LOCATIONS_INICIALES = [
