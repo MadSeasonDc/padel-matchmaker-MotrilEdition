@@ -913,6 +913,7 @@ def safe_index(options, value):
     return options.index(value) if value in options else 0
 
 
+
 # ----------------------------
 # JORNADAS (MOTRIL EDITION)
 # ----------------------------
@@ -921,7 +922,11 @@ if menu == "Jornadas":
 
     st.header("📅 Jornadas")
 
-    # Asegurar que existen SOLO 4 jornadas
+    # Función segura para índices de selectbox
+    def safe_index(options, value):
+        return options.index(value) if value in options else 0
+
+    # Asegurar SOLO 4 jornadas
     if "jornadas" not in data:
         data["jornadas"] = []
 
@@ -946,7 +951,7 @@ if menu == "Jornadas":
     jugadores = sorted(j["nombre"] for j in data["jugadores"])
     clubs = [loc["club"] for loc in data.get("locations", [])]
 
-    # Crear UN SOLO partido si no existe
+    # Crear UN partido por jornada
     if len(jornada["partidos"]) == 0:
         jornada["partidos"].append(partido_vacio())
         save_data(data)
@@ -963,14 +968,14 @@ if menu == "Jornadas":
         partido["lugar"] = c1.selectbox(
             "Lugar",
             [""] + clubs,
-            index=([""] + clubs).index(partido.get("lugar", "")) if partido.get("lugar", "") in clubs else 0
+            index=safe_index([""] + clubs, partido.get("lugar", ""))
         )
 
         pistas = [""] + [str(i) for i in range(1, 11)]
         partido["pista"] = c2.selectbox(
             "Pista",
             pistas,
-            index=pistas.index(str(partido.get("pista", ""))) if str(partido.get("pista", "")) in pistas else 0
+            index=safe_index(pistas, str(partido.get("pista", "")))
         )
 
         try:
@@ -986,21 +991,41 @@ if menu == "Jornadas":
         partido["hora"] = c4.selectbox(
             "Hora",
             horas,
-            index=horas.index(partido.get("hora", "18:00")) if partido.get("hora", "18:00") in horas else 0
+            index=safe_index(horas, partido.get("hora", "18:00"))
         )
 
         # ---------- PAREJAS ----------
+        opts = [""] + jugadores
+        p1 = partido.get("pareja_1", ["", ""])
+        p2 = partido.get("pareja_2", ["", ""])
+
         col_p1, col_p2 = st.columns(2)
 
         with col_p1:
             st.markdown("**Pareja 1**")
-            p1d = st.selectbox("Derecha", [""] + jugadores, index=([""] + jugadores).index(partido.get("pareja_1", ["",""])[0]))
-            p1r = st.selectbox("Revés", [""] + jugadores, index=([""] + jugadores).index(partido.get("pareja_1", ["",""])[1]))
+            p1d = st.selectbox(
+                "Derecha",
+                opts,
+                index=safe_index(opts, p1[0])
+            )
+            p1r = st.selectbox(
+                "Revés",
+                opts,
+                index=safe_index(opts, p1[1])
+            )
 
         with col_p2:
             st.markdown("**Pareja 2**")
-            p2d = st.selectbox("Derecha", [""] + jugadores, index=([""] + jugadores).index(partido.get("pareja_2", ["",""])[0]))
-            p2r = st.selectbox("Revés", [""] + jugadores, index=([""] + jugadores).index(partido.get("pareja_2", ["",""])[1]))
+            p2d = st.selectbox(
+                "Derecha",
+                opts,
+                index=safe_index(opts, p2[0])
+            )
+            p2r = st.selectbox(
+                "Revés",
+                opts,
+                index=safe_index(opts, p2[1])
+            )
 
         partido["pareja_1"] = [p1d, p1r]
         partido["pareja_2"] = [p2d, p2r]
@@ -1022,6 +1047,7 @@ if menu == "Jornadas":
         if st.button("💾 Guardar partido"):
             save_data(data)
             st.success("✅ Partido guardado correctamente")
+
 
 
 # ----------------------------
