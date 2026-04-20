@@ -208,9 +208,13 @@ def partido_con_jugadores(p1, p2):
 
 
 
-def load_data():
+
+ef load_data():
     if not os.path.exists(DATA_FILE):
         data = {
+            # ----------------------------
+            # JUGADORES FIJOS
+            # ----------------------------
             "jugadores": [
                 {
                     "nombre": nombre,
@@ -220,20 +224,48 @@ def load_data():
                 }
                 for nombre in JUGADORES_INICIALES
             ],
+
+            # ----------------------------
+            # JORNADAS (MAX 4)
+            # ----------------------------
             "jornadas": [
-                {"numero": i + 1, "partidos": []}
-                for i in range(7)
+                {
+                    "numero": i + 1,
+                    "partidos": []
+                }
+                for i in range(4)
             ],
+
+            # ----------------------------
+            # DATA ENTRY - ESTADÍSTICAS POR JUGADOR
+            # ----------------------------
+            "players_stats": {
+                nombre: [] for nombre in JUGADORES_INICIALES
+            },
+
+            # ----------------------------
+            # BORRADORES
+            # ----------------------------
             "partidos_borrador": [],
+
+            # ----------------------------
+            # CLUBS / LOCATIONS
+            # ----------------------------
             "locations": LOCATIONS_INICIALES.copy()
         }
+
         save_data(data)
         return data
 
+    # --------------------------------------------------
+    # SI EL ARCHIVO EXISTE → ASEGURAR ESTRUCTURA
+    # --------------------------------------------------
     with open(DATA_FILE, "r") as f:
         data = json.load(f)
 
-    # Asegurar jugadores
+    # ----------------------------
+    # ASEGURAR JUGADORES
+    # ----------------------------
     if "jugadores" not in data:
         data["jugadores"] = []
 
@@ -247,20 +279,45 @@ def load_data():
                 "fijo": True
             })
 
-    # Asegurar jornadas
+    # ----------------------------
+    # ASEGURAR JORNADAS (MAX 4)
+    # ----------------------------
     if "jornadas" not in data:
-        data["jornadas"] = [{"numero": i + 1, "partidos": []} for i in range(7)]
+        data["jornadas"] = []
 
-    # Asegurar borrador
+    data["jornadas"] = data["jornadas"][:4]
+
+    while len(data["jornadas"]) < 4:
+        data["jornadas"].append({
+            "numero": len(data["jornadas"]) + 1,
+            "partidos": []
+        })
+
+    # ----------------------------
+    # ASEGURAR DATA ENTRY
+    # ----------------------------
+    if "players_stats" not in data:
+        data["players_stats"] = {}
+
+    for nombre in JUGADORES_INICIALES:
+        if nombre not in data["players_stats"]:
+            data["players_stats"][nombre] = []
+
+    # ----------------------------
+    # BORRADORES
+    # ----------------------------
     if "partidos_borrador" not in data:
         data["partidos_borrador"] = []
 
-    # Asegurar locations
-    if "locations" not in data or len(data["locations"]) == 0:
+    # ----------------------------
+    # LOCATIONS
+    # ----------------------------
+    if "locations" not in data or not data["locations"]:
         data["locations"] = LOCATIONS_INICIALES.copy()
 
     save_data(data)
     return data
+
 
 
 
