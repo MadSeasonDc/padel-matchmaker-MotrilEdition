@@ -1483,28 +1483,37 @@ elif menu == "PDF / PRINT":
 # ----------------------------
 elif menu == "Data Entry":
 
+    import datetime
+
     st.header("📊 Data Entry – Estadísticas por jugador")
 
     st.markdown(
-        "Pantalla de **entrada de datos punto a punto**. "
-        "Aquí se registrarán acciones individuales que más adelante "
-        "alimentarán estadísticas avanzadas por jugador."
+        "Entrada de datos **punto a punto** para análisis avanzado de pádel. "
+        "Cada punto se registra siguiendo un árbol lógico estructurado."
     )
 
     st.divider()
 
     # =========================================================
-    # ZONAS SUPERIORES (CAMPO + REGISTRO DE PUNTO)
+    # INICIALIZAR SESSION STATE BÁSICO
+    # =========================================================
+    if "set_actual" not in st.session_state:
+        st.session_state.set_actual = "Set 1"
+
+    if "juego_actual" not in st.session_state:
+        st.session_state.juego_actual = 1
+
+    # =========================================================
+    # ZONAS SUPERIORES
     # =========================================================
     col_left, col_right = st.columns([1, 2])
 
     # ---------------------------------------------------------
-    # ZONA IZQUIERDA – CAMPO DE PÁDEL (ESQUEMA)
+    # ZONA IZQUIERDA – CAMPO DE PÁDEL
     # ---------------------------------------------------------
     with col_left:
         st.subheader("🎾 Zona del campo")
-
-        st.caption("Esquema conceptual del campo (no interactivo por ahora)")
+        st.caption("Esquema conceptual (no interactivo por ahora)")
 
         zona_campo = st.radio(
             "Selecciona la zona",
@@ -1517,66 +1526,58 @@ elif menu == "Data Entry":
         )
 
         st.info(
-            "En el futuro este esquema servirá para:\n"
+            "Este esquema se usará más adelante para:\n"
             "- Zonas calientes\n"
-            "- Errores por zona\n"
-            "- Análisis táctico"
+            "- Análisis táctico\n"
+            "- Errores por posición"
         )
 
-  
-   # ---------------------------------------------------------
-    # ZONA DERECHA – REGISTRO DEL PUNTO (ÁRBOL GUIADO)
+    # ---------------------------------------------------------
+    # ZONA DERECHA – REGISTRO DEL PUNTO (ÁRBOL)
     # ---------------------------------------------------------
     with col_right:
         st.subheader("📝 Registro del punto")
+        st.caption("Árbol lógico siguiendo el flujo real del punto")
 
-        st.caption("Entrada guiada siguiendo el árbol lógico del punto")
-
-        st.divider()
-
-        # =====================================================
-        # 1️⃣ ¿QUIÉN GANA EL PUNTO?
-        # =====================================================
+        # -----------------------------
+        # 1️⃣ EQUIPO GANADOR
+        # -----------------------------
         equipo_gana = st.radio(
             "¿Quién gana el punto?",
             ["Equipo A", "Equipo B"],
             horizontal=True
         )
 
-        st.divider()
-
-        # =====================================================
-        # 2️⃣ JUGADOR DEL EQUIPO
-        # =====================================================
+        # -----------------------------
+        # 2️⃣ JUGADOR
+        # -----------------------------
         if equipo_gana == "Equipo A":
             jugador = st.radio(
-                "Jugador que ejecuta",
+                "Jugador ejecutor",
                 ["Jugador 1", "Jugador 2"],
                 horizontal=True
             )
         else:
             jugador = st.radio(
-                "Jugador que ejecuta",
+                "Jugador ejecutor",
                 ["Jugador 3", "Jugador 4"],
                 horizontal=True
             )
 
-        st.divider()
-
-        # =====================================================
+        # -----------------------------
         # 3️⃣ TIPO DE ACCIÓN
-        # =====================================================
+        # -----------------------------
         tipo_accion = st.radio(
             "Tipo de punto",
             ["Saque", "Jugada", "Error del rival"],
             horizontal=True
         )
 
-        st.divider()
+        # -----------------------------
+        # 4️⃣ DETALLE
+        # -----------------------------
+        detalle = None
 
-        # =====================================================
-        # 4️⃣ DETALLE SEGÚN ACCIÓN
-        # =====================================================
         if tipo_accion == "Saque":
             detalle = st.radio(
                 "Tipo de saque",
@@ -1597,25 +1598,50 @@ elif menu == "Data Entry":
                 ["Red", "Fuera"],
                 horizontal=True
             )
-
             jugador_falla = st.radio(
                 "Jugador que falla",
                 ["Jugador 1", "Jugador 2", "Jugador 3", "Jugador 4"],
                 horizontal=True
             )
-
             detalle = f"{tipo_error} – {jugador_falla}"
 
         st.divider()
 
-        # =====================================================
-        # 5️⃣ RESUMEN DEL PUNTO (VISUAL)
-        # =====================================================
-        st.markdown("### ✅ Resumen del punto")
+        # -----------------------------
+        # VALIDACIÓN
+        # -----------------------------
+        punto_valido = True
+        errores = []
 
+        if not equipo_gana:
+            punto_valido = False
+            errores.append("Selecciona el equipo ganador")
+
+        if not jugador:
+            punto_valido = False
+            errores.append("Selecciona el jugador")
+
+        if not tipo_accion:
+            punto_valido = False
+            errores.append("Selecciona el tipo de acción")
+
+        if not detalle:
+            punto_valido = False
+            errores.append("Selecciona el detalle del punto")
+
+        if errores:
+            for e in errores:
+                st.error(f"❌ {e}")
+
+        # -----------------------------
+        # RESUMEN DEL PUNTO
+        # -----------------------------
+        st.markdown("### ✅ Resumen del punto")
         st.code(
             f"""
-Zona del campo : {zona_campo}
+Set            : {st.session_state.set_actual}
+Juego          : {st.session_state.juego_actual}
+Zona           : {zona_campo}
 Equipo ganador : {equipo_gana}
 Jugador        : {jugador}
 Acción         : {tipo_accion}
@@ -1624,22 +1650,17 @@ Detalle        : {detalle}
             language="text"
         )
 
-        st.info(
-            "En el siguiente paso este bloque se convertirá en "
-            "**un evento que se guardará y actualizará el marcador**."
-        )
-
-
- # =====================================================
-        # 6️⃣ REGISTRAR PUNTO
-        # =====================================================
-        import datetime
-
-        if st.button("➕ Registrar punto", use_container_width=True):
-
+        # -----------------------------
+        # REGISTRAR PUNTO
+        # -----------------------------
+        if st.button(
+            "➕ Registrar punto",
+            disabled=not punto_valido,
+            use_container_width=True
+        ):
             punto = {
-                "set": set_actual,
-                "game": juego_actual,
+                "set": st.session_state.set_actual,
+                "game": st.session_state.juego_actual,
                 "zona": zona_campo,
                 "equipo": equipo_gana,
                 "jugador": jugador,
@@ -1648,7 +1669,6 @@ Detalle        : {detalle}
                 "timestamp": datetime.datetime.now().isoformat()
             }
 
-            # Guardar punto en stats del jugador
             if jugador not in data["players_stats"]:
                 data["players_stats"][jugador] = []
 
@@ -1657,81 +1677,45 @@ Detalle        : {detalle}
 
             st.success("✅ Punto registrado correctamente")
 
-    # =========================================================
-    # ZONA INFERIOR – MARCADOR VIVO (SET / JUEGO / PUNTOS)
-    # =========================================================
-    st.subheader("📊 Marcador del partido (data entry)")
+    st.divider()
 
-    # -------------------------
-    # SET Y JUEGO ACTUAL
-    # -------------------------
+    # =========================================================
+    # MARCADOR VIVO (SIN LÓGICA AÚN)
+    # =========================================================
+    st.subheader("📊 Marcador del partido")
+
     col_set, col_game = st.columns(2)
 
     with col_set:
-        set_actual = st.selectbox(
+        st.session_state.set_actual = st.selectbox(
             "Set actual",
             ["Set 1", "Set 2", "Set 3"],
-            index=0
+            index=["Set 1", "Set 2", "Set 3"].index(st.session_state.set_actual)
         )
 
     with col_game:
-        juego_actual = st.number_input(
+        st.session_state.juego_actual = st.number_input(
             "Juego actual",
             min_value=1,
             max_value=30,
-            value=1,
+            value=st.session_state.juego_actual,
             step=1
         )
 
-    st.divider()
+    st.markdown("### 🎾 Puntos del juego (manual por ahora)")
 
-    # -------------------------
-    # PUNTOS DEL JUEGO EN CURSO
-    # -------------------------
-    st.markdown("### 🎾 Puntos del juego en curso")
+    c1, c2 = st.columns(2)
+    with c1:
+        st.selectbox("Equipo A", ["0", "15", "30", "40", "AD"], index=0)
+    with c2:
+        st.selectbox("Equipo B", ["0", "15", "30", "40", "AD"], index=0)
 
-    col_a, col_b = st.columns(2)
-
-    with col_a:
-        puntos_a = st.selectbox(
-            "Equipo A",
-            ["0", "15", "30", "40", "AD"],
-            index=0
-        )
-
-    with col_b:
-        puntos_b = st.selectbox(
-            "Equipo B",
-            ["0", "15", "30", "40", "AD"],
-            index=0
-        )
-
-    st.caption(
-        "Estos valores se actualizarán automáticamente "
-        "cuando se registren puntos en la zona superior derecha."
-    )
-
-    st.divider()
-
-    # -------------------------
-    # RESUMEN VISUAL DE SETS
-    # -------------------------
-    st.markdown("### 📋 Resumen del partido")
+    st.markdown("### 📋 Resumen de sets")
 
     s1, s2, s3 = st.columns(3)
-
     with s1:
-        st.text_input("Set 1", value="0 – 0")
-
+        st.text_input("Set 1", "0 – 0")
     with s2:
-        st.text_input("Set 2", value="0 – 0")
 
-    with s3:
-        st.text_input("Set 3", value="0 – 0")
-
-    st.caption(
-        "Este resumen refleja el estado global del partido "
-        "mientras se introducen puntos de forma manual."
-    )
 
 
