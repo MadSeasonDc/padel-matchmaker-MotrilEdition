@@ -906,7 +906,7 @@ st.title("🏓 Pádel Matchmaker")
 
 menu = st.sidebar.radio(
     "Menú",
-    ["Jornadas", "Ranking", "Locations", "Import / Export", "PDF / PRINT"] )
+    ["Jornadas", "Ranking", "Locations", "Import / Export", "PDF / PRINT","Data Entry"] )
 
 
 def safe_index(options, value):
