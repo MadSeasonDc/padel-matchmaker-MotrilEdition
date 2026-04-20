@@ -74,6 +74,15 @@ def mostrar_result_book_easter_egg():
 
  
 
+ef siguiente_punto(valor_actual):
+    orden = ["0", "15", "30", "40", "AD"]
+    if valor_actual not in orden:
+        return valor_actual
+    idx = orden.index(valor_actual)
+    if idx < len(orden) - 1:
+        return orden[idx + 1]
+    return valor_actual
+
 
 
 
