@@ -922,11 +922,20 @@ if menu == "Jornadas":
 
     st.header("📅 Jornadas")
 
-    # Función segura para índices de selectbox
+    # -------- helpers seguros --------
     def safe_index(options, value):
         return options.index(value) if value in options else 0
 
-    # Asegurar SOLO 4 jornadas
+    def ensure_pair(pair):
+        if not isinstance(pair, list):
+            return ["", ""]
+        if len(pair) == 0:
+            return ["", ""]
+        if len(pair) == 1:
+            return [pair[0], ""]
+        return pair[:2]
+
+    # -------- asegurar 4 jornadas --------
     if "jornadas" not in data:
         data["jornadas"] = []
 
@@ -951,7 +960,7 @@ if menu == "Jornadas":
     jugadores = sorted(j["nombre"] for j in data["jugadores"])
     clubs = [loc["club"] for loc in data.get("locations", [])]
 
-    # Crear UN partido por jornada
+    # -------- un solo partido --------
     if len(jornada["partidos"]) == 0:
         jornada["partidos"].append(partido_vacio())
         save_data(data)
@@ -959,10 +968,14 @@ if menu == "Jornadas":
 
     partido = jornada["partidos"][0]
 
+    # Normalizar parejas (CLAVE)
+    partido["pareja_1"] = ensure_pair(partido.get("pareja_1"))
+    partido["pareja_2"] = ensure_pair(partido.get("pareja_2"))
+
     with st.container(border=True):
         st.markdown("### 🎯 Partido único")
 
-        # ---------- INFO BÁSICA ----------
+        # -------- info básica --------
         c1, c2, c3, c4 = st.columns(4)
 
         partido["lugar"] = c1.selectbox(
@@ -983,9 +996,7 @@ if menu == "Jornadas":
         except Exception:
             fecha_val = datetime.date.today()
 
-        partido["fecha"] = str(
-            c3.date_input("Fecha", fecha_val)
-        )
+        partido["fecha"] = str(c3.date_input("Fecha", fecha_val))
 
         horas = [f"{h:02d}:{m:02d}" for h in range(16, 23) for m in (0, 30)]
         partido["hora"] = c4.selectbox(
@@ -994,60 +1005,40 @@ if menu == "Jornadas":
             index=safe_index(horas, partido.get("hora", "18:00"))
         )
 
-        # ---------- PAREJAS ----------
+        # -------- parejas --------
         opts = [""] + jugadores
-        p1 = partido.get("pareja_1", ["", ""])
-        p2 = partido.get("pareja_2", ["", ""])
+        p1 = partido["pareja_1"]
+        p2 = partido["pareja_2"]
 
         col_p1, col_p2 = st.columns(2)
 
         with col_p1:
             st.markdown("**Pareja 1**")
-            p1d = st.selectbox(
-                "Derecha",
-                opts,
-                index=safe_index(opts, p1[0])
-            )
-            p1r = st.selectbox(
-                "Revés",
-                opts,
-                index=safe_index(opts, p1[1])
-            )
+            p1d = st.selectbox("Derecha", opts, index=safe_index(opts, p1[0]))
+            p1r = st.selectbox("Revés",   opts, index=safe_index(opts, p1[1]))
 
         with col_p2:
             st.markdown("**Pareja 2**")
-            p2d = st.selectbox(
-                "Derecha",
-                opts,
-                index=safe_index(opts, p2[0])
-            )
-            p2r = st.selectbox(
-                "Revés",
-                opts,
-                index=safe_index(opts, p2[1])
-            )
+            p2d = st.selectbox("Derecha", opts, index=safe_index(opts, p2[0]))
+            p2r = st.selectbox("Revés",   opts, index=safe_index(opts, p2[1]))
 
         partido["pareja_1"] = [p1d, p1r]
         partido["pareja_2"] = [p2d, p2r]
 
-        # ---------- RESULTADO ----------
+        # -------- resultado --------
         st.markdown("**Resultado**")
         s1, s2, s3 = st.columns(3)
 
         partido["set1_p1"] = s1.number_input("Set 1 P1", 0, 7, partido.get("set1_p1", 0))
         partido["set1_p2"] = s1.number_input("Set 1 P2", 0, 7, partido.get("set1_p2", 0))
-
         partido["set2_p1"] = s2.number_input("Set 2 P1", 0, 7, partido.get("set2_p1", 0))
         partido["set2_p2"] = s2.number_input("Set 2 P2", 0, 7, partido.get("set2_p2", 0))
-
         partido["set3_p1"] = s3.number_input("Set 3 P1", 0, 7, partido.get("set3_p1", 0))
         partido["set3_p2"] = s3.number_input("Set 3 P2", 0, 7, partido.get("set3_p2", 0))
 
-        # ---------- GUARDAR ----------
         if st.button("💾 Guardar partido"):
             save_data(data)
             st.success("✅ Partido guardado correctamente")
-
 
 
 # ----------------------------
