@@ -1476,14 +1476,94 @@ elif menu == "PDF / PRINT":
         mostrar_result_book_easter_egg()
 
 
+
+# ----------------------------
+
 # ----------------------------
 # DATA ENTRY
 # ----------------------------
 elif menu == "Data Entry":
+
     st.header("📊 Data Entry – Estadísticas por jugador")
 
-    st.info(
-        "Este módulo servirá para introducir estadísticas avanzadas "
-        "por jugador (puntos, zonas del campo, tipos de jugada, etc.). "
-        "De momento es solo la estructura base."
+    st.markdown(
+        "Pantalla de entrada de datos por jugador. "
+        "Aquí se registrarán puntos, zonas del campo y tipos de jugada."
     )
+
+    st.divider()
+
+    # ============================
+    # ZONAS SUPERIORES
+    # ============================
+    col_left, col_right = st.columns([1, 2])
+
+    # ----------------------------
+    # ZONA IZQUIERDA – CAMPO
+    # ----------------------------
+    with col_left:
+        st.subheader("🎾 Campo de Pádel")
+
+        st.caption("Esquema visual (no interactivo por ahora)")
+
+        zona = st.radio(
+            "Zona del campo",
+            [
+                "1️⃣ Delantera Izquierda",
+                "2️⃣ Delantera Derecha",
+                "3️⃣ Trasera Izquierda",
+                "4️⃣ Trasera Derecha",
+            ]
+        )
+
+        st.info(
+            "Este esquema será interactivo en el futuro "
+            "(heatmaps, zonas calientes, etc.)."
+        )
+
+    # ----------------------------
+    # ZONA DERECHA – DATA ENTRY
+    # ----------------------------
+    with col_right:
+        st.subheader("📝 Registro del punto")
+
+        st.caption("Aquí se definirá el tipo de punto siguiendo el árbol lógico")
+
+        st.warning(
+            "Zona preparada para:\n"
+            "- Equipo ganador\n"
+            "- Jugador implicado\n"
+            "- Tipo de jugada o error\n"
+            "- Detalle del punto"
+        )
+
+        st.markdown(
+            """
+            **Ejemplo de flujo (a implementar):**
+            - Equipo A → Jugador 1 → Jugada → Smash  
+            - Equipo B → Error rival → Red
+            """
+        )
+
+    st.divider()
+
+    # ============================
+    # ZONA INFERIOR – MARCADOR
+    # ============================
+    st.subheader("📊 Marcador por sets")
+
+    c1, c2, c3 = st.columns(3)
+
+    with c1:
+        st.text_input("Set 1", value="0 – 0")
+
+    with c2:
+        st.text_input("Set 2", value="0 – 0")
+
+    with c3:
+        st.text_input("Set 3", value="0 – 0")
+
+    st.caption(
+        "El marcador será alimentado por los puntos más adelante."
+    )
+
