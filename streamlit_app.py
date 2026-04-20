@@ -1091,7 +1091,7 @@ if menu == "Jornadas":
 
 
 
-# ----------------------------
+
 # RANKING (MOTRIL EDITION)
 # ----------------------------
 elif menu == "Ranking":
@@ -1101,7 +1101,7 @@ elif menu == "Ranking":
 
     jornadas = data.get("jornadas", [])
 
-    # Inicializar estadísticas SOLO para los 5 jugadores
+    # Inicializar estadísticas para los 5 jugadores
     stats = {
         nombre: {
             "PJ": 0,
@@ -1128,19 +1128,16 @@ elif menu == "Ranking":
             if "" in p1 or "" in p2:
                 continue
 
-            # Sets
             s1_p1, s1_p2 = p.get("set1_p1", 0), p.get("set1_p2", 0)
             s2_p1, s2_p2 = p.get("set2_p1", 0), p.get("set2_p2", 0)
             s3_p1, s3_p2 = p.get("set3_p1", 0), p.get("set3_p2", 0)
 
-            # Partido no jugado
             if (s1_p1 + s1_p2) == 0:
                 continue
 
             juegos_p1 = s1_p1 + s2_p1 + s3_p1
             juegos_p2 = s1_p2 + s2_p2 + s3_p2
 
-            # Partidos jugados
             for j in p1:
                 stats[j]["PJ"] += 1
                 stats[j]["JG"] += juegos_p1
@@ -1151,11 +1148,9 @@ elif menu == "Ranking":
                 stats[j]["JG"] += juegos_p2
                 stats[j]["JP"] += juegos_p1
 
-            # Sets ganados
             sets_p1 = (s1_p1 > s1_p2) + (s2_p1 > s2_p2)
             sets_p2 = (s1_p2 > s1_p1) + (s2_p2 > s2_p1)
 
-            # Con tercer set
             if (s3_p1 + s3_p2) > 0:
                 ganadores = p1 if s3_p1 > s3_p2 else p2
                 perdedores = p2 if ganadores == p1 else p1
@@ -1168,7 +1163,6 @@ elif menu == "Ranking":
                     stats[j]["PP"] += 1
                     stats[j]["Pts"] += 1
             else:
-                # Sin tercer set
                 if sets_p1 > sets_p2:
                     for j in p1:
                         stats[j]["PG"] += 1
@@ -1182,11 +1176,10 @@ elif menu == "Ranking":
                     for j in p1:
                         stats[j]["PP"] += 1
                 else:
-                    # Empate
                     for j in p1 + p2:
                         stats[j]["Pts"] += 1
 
-    # Construir tabla
+    # Construir DataFrame
     filas = []
     for nombre, s in stats.items():
         filas.append({
@@ -1206,82 +1199,25 @@ elif menu == "Ranking":
     df = pd.DataFrame(filas)
     df.insert(0, "RK", range(1, len(df) + 1))
 
-    # ---------- ESTILO ----------
-    def style_row(row):
-        estilos = [""] * len(row)
+    st.dataframe(df, use_container_width=True, hide_index=True)
 
-        idx_jugador = row.index.get_loc("Jugador")
-        if row["RK"] == 1:
-            estilos[idx_jugador] = "background-color:#FFD700;font-weight:bold"
-        elif row["RK"] == 2:
-            estilos[idx_jugador] = "background-color:#C0C0C0"
-        elif row["RK"] == 3:
-            estilos[idx_jugador] = "background-color:#CD7F32"
-
-        idx_dif = row.index.get_loc("Dif")
-        if row["Dif"] > 0:
-            estilos[idx_dif] = "color:green;font-weight:bold"
-        elif row["Dif"] < 0:
-            estilos[idx_dif] = "color:red;font-weight:bold"
-
-        return estilos
-
-    df_styled = (
-        df.style
-        .apply(style_row, axis=1)
-        .set_properties(
-            subset=["RK", "PJ", "PG", "PP", "Pts", "Dif"],
-            **{"text-align": "center", "width": "70px"}
-        )
-        .set_properties(
-            subset=["Jugador"],
-            **{"width": "220px"}
-        )
-    )
-
-    # ---------- TABLA ----------
-    st.markdown("<div style='display:flex; justify-content:center;'>", unsafe_allow_html=True)
-    st.dataframe(
-        df_styled,
-        use_container_width=False,
-        hide_index=True
-    )
-    st.markdown("</div>", unsafe_allow_html=True)
-
-    # ---------- LEYENDA ----------
     st.markdown(
         """
-<div style="
- display: inline-block;
- border: 1px solid rgba(200,200,200,0.4);
- border-radius: 8px;
- padding: 14px 18px;
- margin-top: 16px;
- margin-bottom: 16px;
-">
-<h4 style="margin-top:0;">📘 Leyenda del ranking</h4>
-<ul style="margin-left:0; padding-left:18px;">
- <li><strong>RK</strong> → Posición</li>
- <li><strong>PJ</strong> → Partidos jugados</li>
- <li><strong>PG</strong> → Partidos ganados</li>
- <li><strong>PP</strong> → Partidos perdidos</li>
- <li><strong>Pts</strong> → Puntos totales</li>
- <li><strong>Dif</strong> → Diferencia de juegos (JG − JP)</li>
-</ul>
-</div>
-""",
-        unsafe_allow_html=True
-    )
+### 📘 Leyenda
+- **RK** → Posición  
+- **PJ** → Partidos jugados  
+- **PG** → Partidos ganados  
+- **PP** → Partidos perdidos  
+- **Pts** → Puntos  
+- **Dif** → Juegos ganados − perdidos  
 
-    # ---------- SISTEMA DE PUNTUACIÓN ----------
-    st.markdown(
-        """
 ### 🏓 Sistema de puntuación
-- ✅ **Victoria directa (2 sets)** → **3 puntos**
-- ✅ **Partido con tercer set** → **3 puntos ganador / 1 punto perdedor**
-- ✅ **Empate sin set decisivo** → **1 punto por jugador**
+- Victoria → **3 puntos**
+- Partido a 3 sets → **3 / 1**
+- Empate → **1 punto por jugador**
 """
     )
+
 
 # ----------------------------
 # LOCATIONS
