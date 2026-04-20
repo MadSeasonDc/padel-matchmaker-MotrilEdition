@@ -1005,25 +1005,45 @@ if menu == "Jornadas":
             index=safe_index(horas, partido.get("hora", "18:00"))
         )
 
-        # -------- parejas --------
-        opts = [""] + jugadores
-        p1 = partido["pareja_1"]
-        p2 = partido["pareja_2"]
+       # -------- parejas --------
+opts = [""] + jugadores
+p1 = partido["pareja_1"]
+p2 = partido["pareja_2"]
 
-        col_p1, col_p2 = st.columns(2)
+col_p1, col_p2 = st.columns(2)
 
-        with col_p1:
-            st.markdown("**Pareja 1**")
-            p1d = st.selectbox("Derecha", opts, index=safe_index(opts, p1[0]))
-            p1r = st.selectbox("Revés",   opts, index=safe_index(opts, p1[1]))
+with col_p1:
+    st.markdown("**Pareja 1**")
+    p1d = st.selectbox(
+        "Derecha",
+        opts,
+        index=safe_index(opts, p1[0]),
+        key=f"j{jornada_index}_p1_derecha"
+    )
+    p1r = st.selectbox(
+        "Revés",
+        opts,
+        index=safe_index(opts, p1[1]),
+        key=f"j{jornada_index}_p1_reves"
+    )
 
-        with col_p2:
-            st.markdown("**Pareja 2**")
-            p2d = st.selectbox("Derecha", opts, index=safe_index(opts, p2[0]))
-            p2r = st.selectbox("Revés",   opts, index=safe_index(opts, p2[1]))
+with col_p2:
+    st.markdown("**Pareja 2**")
+    p2d = st.selectbox(
+        "Derecha",
+        opts,
+        index=safe_index(opts, p2[0]),
+        key=f"j{jornada_index}_p2_derecha"
+    )
+    p2r = st.selectbox(
+        "Revés",
+        opts,
+        index=safe_index(opts, p2[1]),
+        key=f"j{jornada_index}_p2_reves"
+    )
 
-        partido["pareja_1"] = [p1d, p1r]
-        partido["pareja_2"] = [p2d, p2r]
+partido["pareja_1"] = [p1d, p1r]
+partido["pareja_2"] = [p2d, p2r]
 
         # -------- resultado --------
         st.markdown("**Resultado**")
