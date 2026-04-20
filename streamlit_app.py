@@ -1679,43 +1679,80 @@ Detalle        : {detalle}
 
     st.divider()
 
-    # =========================================================
-    # MARCADOR VIVO (SIN LÓGICA AÚN)
-    # =========================================================
-    st.subheader("📊 Marcador del partido")
+ 
+# =========================================================
+# MARCADOR VIVO (SIN LÓGICA AÚN)
+# =========================================================
+st.subheader("📊 Marcador del partido")
 
-    col_set, col_game = st.columns(2)
+# -------------------------
+# SET Y JUEGO ACTUAL
+# -------------------------
+col_set, col_game = st.columns(2)
 
-    with col_set:
-        st.session_state.set_actual = st.selectbox(
-            "Set actual",
-            ["Set 1", "Set 2", "Set 3"],
-            index=["Set 1", "Set 2", "Set 3"].index(st.session_state.set_actual)
-        )
+with col_set:
+    st.session_state.set_actual = st.selectbox(
+        "Set actual",
+        ["Set 1", "Set 2", "Set 3"],
+        index=["Set 1", "Set 2", "Set 3"].index(st.session_state.set_actual)
+    )
 
-    with col_game:
-        st.session_state.juego_actual = st.number_input(
-            "Juego actual",
-            min_value=1,
-            max_value=30,
-            value=st.session_state.juego_actual,
-            step=1
-        )
+with col_game:
+    st.session_state.juego_actual = st.number_input(
+        "Juego actual",
+        min_value=1,
+        max_value=30,
+        value=st.session_state.juego_actual,
+        step=1
+    )
 
-    st.markdown("### 🎾 Puntos del juego (manual por ahora)")
+st.divider()
 
-    c1, c2 = st.columns(2)
-    with c1:
-        st.selectbox("Equipo A", ["0", "15", "30", "40", "AD"], index=0)
-    with c2:
-        st.selectbox("Equipo B", ["0", "15", "30", "40", "AD"], index=0)
+# -------------------------
+# PUNTOS DEL JUEGO (MANUAL)
+# -------------------------
+st.markdown("### 🎾 Puntos del juego (manual por ahora)")
 
-    st.markdown("### 📋 Resumen de sets")
+c1, c2 = st.columns(2)
 
-    s1, s2, s3 = st.columns(3)
-    with s1:
-        st.text_input("Set 1", "0 – 0")
-    with s2:
+with c1:
+    st.selectbox(
+        "Equipo A",
+        ["0", "15", "30", "40", "AD"],
+        index=0,
+        key="puntos_equipo_a"
+    )
+
+with c2:
+    st.selectbox(
+        "Equipo B",
+        ["0", "15", "30", "40", "AD"],
+        index=0,
+        key="puntos_equipo_b"
+    )
+
+st.caption(
+    "Estos valores serán automáticos cuando se implemente "
+    "la lógica de avance de puntos."
+)
+
+st.divider()
+
+# -------------------------
+# RESUMEN DE SETS
+# -------------------------
+st.markdown("### 📋 Resumen de sets")
+
+s1, s2, s3 = st.columns(3)
+
+with s1:
+    st.text_input("Set 1", value="0 – 0", key="res_set_1")
+
+with s2:
+    st.text_input("Set 2", value="0 – 0", key="res_set_2")
+
+with s3:
+    st.text_input("Set 3", value="0 – 0", key="res_set_3")
 
 
 
