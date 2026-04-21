@@ -1537,7 +1537,7 @@ elif menu == "Data Entry":
     st.header("📊 Data Entry – Partido (modo TV)")
 
     # =========================================================
-    # ESTADO DEL PARTIDO (SESSION STATE)
+    # ESTADO DEL PARTIDO
     # =========================================================
     if "set_actual" not in st.session_state:
         st.session_state.set_actual = 1
@@ -1555,7 +1555,7 @@ elif menu == "Data Entry":
     st.divider()
 
     # =========================================================
-    # FUNCIONES DE LÓGICA (LOCAL AL BLOQUE)
+    # LÓGICA REAL DE PÁDEL
     # =========================================================
     def avanzar_punto(valor):
         orden = ["0", "15", "30", "40", "AD"]
@@ -1595,7 +1595,7 @@ elif menu == "Data Entry":
             return
 
     # =========================================================
-    # LAYOUT PRINCIPAL
+    # LAYOUT
     # =========================================================
     col_left, col_right = st.columns([1, 2])
 
@@ -1635,29 +1635,62 @@ Set {p['set']}
         )
         equipo = "A" if equipo_ui == "Equipo A" else "B"
 
+        # Jugador ejecutor
         if equipo == "A":
-            jugador = st.radio("Jugador", ["Jugador 1", "Jugador 2"], horizontal=True)
+            jugador = st.radio(
+                "Jugador",
+                ["Jugador 1", "Jugador 2"],
+                horizontal=True
+            )
         else:
-            jugador = st.radio("Jugador", ["Jugador 3", "Jugador 4"], horizontal=True)
+            jugador = st.radio(
+                "Jugador",
+                ["Jugador 3", "Jugador 4"],
+                horizontal=True
+            )
 
+        # Tipo de punto
         accion = st.radio(
             "Tipo de punto",
             ["Saque", "Jugada", "Error del rival"],
             horizontal=True
         )
 
+        # Detalle
         if accion == "Saque":
-            detalle = st.radio("Tipo de saque", ["Directo", "Segundo saque"], horizontal=True)
-        elif accion == "Jugada":
-            detalle = st.radio("Tipo de jugada", ["Normal", "Globo", "Smash"], horizontal=True)
-        else:
-            error = st.radio("Error", ["Red", "Fuera"], horizontal=True)
-            falla = st.radio(
-                "Jugador que falla",
-                ["Jugador 1", "Jugador 2", "Jugador 3", "Jugador 4"],
+            detalle = st.radio(
+                "Tipo de saque",
+                ["Directo", "Segundo saque"],
                 horizontal=True
             )
-            detalle = f"{error} – {falla}"
+
+        elif accion == "Jugada":
+            detalle = st.radio(
+                "Tipo de jugada",
+                ["Normal", "Globo", "Smash"],
+                horizontal=True
+            )
+
+        else:
+            error = st.radio(
+                "Tipo de error",
+                ["Red", "Fuera"],
+                horizontal=True
+            )
+
+            # SOLO jugadores del equipo contrario
+            if equipo == "A":
+                jugadores_fallan = ["Jugador 3", "Jugador 4"]
+            else:
+                jugadores_fallan = ["Jugador 1", "Jugador 2"]
+
+            jugador_falla = st.radio(
+                "Jugador que falla",
+                jugadores_fallan,
+                horizontal=True
+            )
+
+            detalle = f"{error} – {jugador_falla}"
 
         st.divider()
 
@@ -1710,4 +1743,5 @@ Set {p['set']}
     cols[2].markdown(st.session_state.sets[2]["B"])
     cols[3].markdown(st.session_state.sets[3]["B"])
     cols[4].markdown(f"**{st.session_state.puntos['B']}**")
+
 
