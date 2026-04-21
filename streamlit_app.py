@@ -1528,32 +1528,71 @@ elif menu == "PDF / PRINT":
     if st.button("📕 Generate Results Book"):
         mostrar_result_book_easter_egg()
 
-
-
 # ----------------------------
 # DATA ENTRY
 # ----------------------------
 elif menu == "Data Entry":
     import datetime
 
-    st.header("📊 Data Entry – Puntos del partido")
+    st.header("📊 Data Entry – Partido (modo TV)")
 
     # =========================================================
-    # SESSION STATE (UNA SOLA VEZ)
+    # ESTADO DEL PARTIDO (SESSION STATE)
     # =========================================================
     if "set_actual" not in st.session_state:
-        st.session_state.set_actual = "Set 1"
+        st.session_state.set_actual = 1
 
-    if "juego_actual" not in st.session_state:
-        st.session_state.juego_actual = 1
+    if "sets" not in st.session_state:
+        st.session_state.sets = {
+            1: {"A": 0, "B": 0},
+            2: {"A": 0, "B": 0},
+            3: {"A": 0, "B": 0},
+        }
 
-    if "puntos_a" not in st.session_state:
-        st.session_state.puntos_a = "0"
-
-    if "puntos_b" not in st.session_state:
-        st.session_state.puntos_b = "0"
+    if "puntos" not in st.session_state:
+        st.session_state.puntos = {"A": "0", "B": "0"}
 
     st.divider()
+
+    # =========================================================
+    # FUNCIONES DE LÓGICA (LOCAL AL BLOQUE)
+    # =========================================================
+    def avanzar_punto(valor):
+        orden = ["0", "15", "30", "40", "AD"]
+        idx = orden.index(valor)
+        return orden[min(idx + 1, len(orden) - 1)]
+
+    def procesar_punto(equipo):
+        rival = "B" if equipo == "A" else "A"
+        p = st.session_state.puntos
+        sets = st.session_state.sets
+        s = st.session_state.set_actual
+
+        # Deuce → ventaja
+        if p["A"] == "40" and p["B"] == "40":
+            p[equipo] = "AD"
+            return
+
+        # Ventaja → juego
+        if p[equipo] == "AD":
+            sets[s][equipo] += 1
+            p["A"], p["B"] = "0", "0"
+            return
+
+        # Quitar ventaja rival
+        if p[rival] == "AD":
+            p["A"], p["B"] = "40", "40"
+            return
+
+        # Avance normal
+        nuevo = avanzar_punto(p[equipo])
+        p[equipo] = nuevo
+
+        # 40 con rival por debajo → juego
+        if nuevo == "40" and p[rival] in ["0", "15", "30"]:
+            sets[s][equipo] += 1
+            p["A"], p["B"] = "0", "0"
+            return
 
     # =========================================================
     # LAYOUT PRINCIPAL
@@ -1564,7 +1603,7 @@ elif menu == "Data Entry":
     # IZQUIERDA – HISTÓRICO DE JUGADAS
     # ---------------------------------------------------------
     with col_left:
-        st.subheader("📋 Jugadas registradas")
+        st.subheader("📋 Jugadas")
 
         todas = []
         for jug, pts in data.get("players_stats", {}).items():
@@ -1572,13 +1611,13 @@ elif menu == "Data Entry":
                 todas.append((jug, p))
 
         if not todas:
-            st.info("Aún no hay jugadas registradas")
+            st.info("Aún no hay puntos registrados")
         else:
             for jug, p in reversed(todas[-15:]):
                 st.markdown(
                     f"""
 **{jug}**  
-Set {p['set']} · Juego {p['game']}  
+Set {p['set']}  
 {p['accion']} → {p['detalle']}
 """
                 )
@@ -1589,33 +1628,30 @@ Set {p['set']} · Juego {p['game']}
     with col_right:
         st.subheader("🎾 Registrar punto")
 
-        # ---------- Equipo ----------
-        equipo = st.radio(
+        equipo_ui = st.radio(
             "¿Quién gana el punto?",
             ["Equipo A", "Equipo B"],
             horizontal=True
         )
+        equipo = "A" if equipo_ui == "Equipo A" else "B"
 
-        # ---------- Jugador ----------
-        if equipo == "Equipo A":
+        if equipo == "A":
             jugador = st.radio("Jugador", ["Jugador 1", "Jugador 2"], horizontal=True)
         else:
             jugador = st.radio("Jugador", ["Jugador 3", "Jugador 4"], horizontal=True)
 
-        # ---------- Acción ----------
         accion = st.radio(
             "Tipo de punto",
             ["Saque", "Jugada", "Error del rival"],
             horizontal=True
         )
 
-        detalle = None
         if accion == "Saque":
             detalle = st.radio("Tipo de saque", ["Directo", "Segundo saque"], horizontal=True)
         elif accion == "Jugada":
             detalle = st.radio("Tipo de jugada", ["Normal", "Globo", "Smash"], horizontal=True)
         else:
-            error = st.radio("Tipo de error", ["Red", "Fuera"], horizontal=True)
+            error = st.radio("Error", ["Red", "Fuera"], horizontal=True)
             falla = st.radio(
                 "Jugador que falla",
                 ["Jugador 1", "Jugador 2", "Jugador 3", "Jugador 4"],
@@ -1625,12 +1661,12 @@ Set {p['set']} · Juego {p['game']}
 
         st.divider()
 
-        # ---------- Registrar punto ----------
         if st.button("➕ Registrar punto", use_container_width=True):
+            procesar_punto(equipo)
+
             punto = {
                 "set": st.session_state.set_actual,
-                "game": st.session_state.juego_actual,
-                "equipo": equipo,
+                "equipo": equipo_ui,
                 "jugador": jugador,
                 "accion": accion,
                 "detalle": detalle,
@@ -1648,28 +1684,30 @@ Set {p['set']} · Juego {p['game']}
     st.divider()
 
     # =========================================================
-    # MARCADOR (DATA ENTRY)
+    # MARCADOR TIPO TV
     # =========================================================
-    st.subheader("📊 Marcador")
+    st.subheader("📺 Marcador")
 
-    col_set, col_game = st.columns(2)
-    with col_set:
-        st.session_state.set_actual = st.selectbox(
-            "Set actual",
-            ["Set 1", "Set 2", "Set 3"],
-            index=["Set 1", "Set 2", "Set 3"].index(st.session_state.set_actual)
-        )
+    cols = st.columns([2, 1, 1, 1, 1])
+    cols[0].markdown("**Equipo**")
+    cols[1].markdown("**Set 1**")
+    cols[2].markdown("**Set 2**")
+    cols[3].markdown("**Set 3**")
+    cols[4].markdown("**Punto**")
 
-    with col_game:
-        st.session_state.juego_actual = st.number_input(
-            "Juego actual",
-            min_value=1,
-            max_value=30,
-            value=st.session_state.juego_actual
-        )
+    st.divider()
 
-    c1, c2 = st.columns(2)
-    with c1:
-        st.metric("Equipo A", st.session_state.puntos_a)
-    with c2:
-        st.metric("Equipo B", st.session_state.puntos_b)
+    cols = st.columns([2, 1, 1, 1, 1])
+    cols[0].markdown("**Equipo A**")
+    cols[1].markdown(st.session_state.sets[1]["A"])
+    cols[2].markdown(st.session_state.sets[2]["A"])
+    cols[3].markdown(st.session_state.sets[3]["A"])
+    cols[4].markdown(f"**{st.session_state.puntos['A']}**")
+
+    cols = st.columns([2, 1, 1, 1, 1])
+    cols[0].markdown("**Equipo B**")
+    cols[1].markdown(st.session_state.sets[1]["B"])
+    cols[2].markdown(st.session_state.sets[2]["B"])
+    cols[3].markdown(st.session_state.sets[3]["B"])
+    cols[4].markdown(f"**{st.session_state.puntos['B']}**")
+
