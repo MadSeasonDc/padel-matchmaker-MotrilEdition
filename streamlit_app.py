@@ -79,6 +79,42 @@ def avanzar_punto(puntos):
 
 
 
+def procesar_punto(equipo):
+    rival = "B" if equipo == "A" else "A"
+
+    p = st.session_state.puntos
+    sets = st.session_state.sets
+    set_actual = st.session_state.set_actual
+
+    # Si estamos en deuce
+    if p[equipo] == "40" and p[rival] == "40":
+        p[equipo] = "AD"
+        return
+
+    # Si tengo ventaja y gano punto → GANO JUEGO
+    if p[equipo] == "AD":
+        sets[set_actual][equipo] += 1
+        p["A"] = "0"
+        p["B"] = "0"
+        return
+
+    # Si el rival tenía AD → volver a deuce
+    if p[rival] == "AD":
+        p[rival] = "40"
+        p[equipo] = "40"
+        return
+
+    # Avanzar punto normalmente
+    nuevo = avanzar_punto(p[equipo])
+    p[equipo] = nuevo
+
+    # Si llego a 40 y el rival < 40 → GANO JUEGO
+    if nuevo == "40" and p[rival] in ["0", "15", "30"]:
+        sets[set_actual][equipo] += 1
+        p["A"] = "0"
+        p["B"] = "0"
+        return
+
 
  
 
