@@ -69,6 +69,14 @@ def mostrar_result_book_easter_egg():
     
  
 
+def avanzar_punto(puntos):
+    """
+    Devuelve el siguiente estado de puntos.
+    """
+    orden = ["0", "15", "30", "40", "AD"]
+    idx = orden.index(puntos)
+    return orden[min(idx + 1, len(orden) - 1)]
+
 
 
 
